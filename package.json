@@ -1,0 +1,7 @@
+{
+  "name": "memory-cardgame",
+  "version": "1.0.0",
+  "devDependencies": {
+    "fs-extra": "^9.1.0"
+  }
+}

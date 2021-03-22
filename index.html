@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Memory Card Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            flex-direction: column;
+            background: #ddd;
+        }
+
+        main, section {
+            width: calc(100% - 2vmin);
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+
+
+        main {
+            flex-direction: column;
+        }
+
+        section {
+            width: calc(100% - 2vmin - 4rem);
+            margin: 1vmin;
+            min-height: calc(50vh - 2vmin - 4rem);
+
+            flex-direction: column;
+            padding: 2rem;
+        }
+
+        h1, h2, h3, h4, h5, h6, p {
+            padding: 0.5rem;
+            margin: 0;
+        }
+
+        label {
+            font-size: 1.25rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+        }
+
+        h2 {
+            font-size: 1.45rem;
+        }
+
+        nav {
+            width: 100%;
+            flex-direction: column;
+            display: flex;
+        }
+
+        body.playing nav a:not(.active) {
+            display: none !important;
+        }
+
+        body.playing nav:hover a:not(.active) {
+            display: flex !important;
+        }
+
+
+        #gameForm {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 5px #00000033;
+            border: 1px solid #222;
+            background: white;
+
+        }
+
+        #roster a {
+            padding: 1rem;
+            text-decoration: none;
+            text-align: center;
+            justify-content: space-between;
+            align-items: center;
+            display: flex;
+        }
+
+        #roster b {
+            font-size: 1.4rem;
+            color: black;
+            padding: 0.25rem;
+        }
+
+        #roster b:empty {
+            display: none !important;
+        }
+
+        #playerForm {
+            padding: 0.5rem;
+            background: #ccc;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #playerName {
+            padding: 1rem;
+            margin: 0 0 0.25rem 0;
+            width: calc(100% - 2.25rem)
+        }
+
+        #playerButton, #startGame, #gameType {
+            padding: 1rem;
+            width: 100%;
+
+
+        }
+
+        #playerButton {
+            margin-bottom: 0.5rem;
+            width: calc(100% - 2rem)
+
+        }
+
+        #gameType {
+            text-transform: capitalize;
+        }
+
+
+        .active {
+            border: 1px solid #cbe8ff;
+            background: #00768b;
+            border-radius: 5px;
+            color: white;
+        }
+
+        .active span {
+            padding: 0.25rem;
+            background: white;
+            border-radius: 1rem;
+        }
+
+
+        .found {
+            opacity: 0.2;
+        }
+
+
+        #startGame {
+            border: none;
+            padding: 1rem;
+            width: 100%;
+            margin: 0;
+            background: green;
+            color: white;
+        }
+
+        .hide {
+            display: none !important;
+        }
+
+        #gameBoard {
+            flex-direction: column;
+
+        }
+
+        #cards {
+            /*padding: 0 1rem;*/
+            width: 100%;
+            flex-wrap: wrap;
+            flex-direction: row;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            height: 3.5rem;
+            width: 2.5rem;
+            margin: 0.25rem;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            border: 2px solid #FFFFFFAA;
+            background: white;
+            border-radius: 0.25rem;
+            box-shadow: 0 0 1px #000000AA;
+            transition: transform 100ms linear;
+            position: relative;
+            transform: rotateY(180deg);
+
+            overflow: hidden;
+        }
+
+        .card[data-suit='♠'], .card[data-suit='♣'] {
+
+        }
+
+        .card[data-suit='♦'], .card[data-suit='♥'] {
+            color: red;
+        }
+
+
+        .card:before {
+
+            background: #5c8fad url('background.jpg') no-repeat center center;
+            background-size: contain;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            position: absolute;
+            top: 0;
+            left: 0;
+            content: '';
+
+        }
+
+        .card.selected {
+            transform: rotateY(0deg) scale(1.1);
+            box-shadow: 0 0 0.15rem #00000066;
+            /*top: -0.5rem;*/
+        }
+
+        .card.selected:before {
+            display: none;
+        }
+
+        .card.selected[data-suit='♠'], .card.selected[data-suit='♣'] {
+            border: 1px solid black;
+        }
+
+        .card.selected[data-suit='♦'], .card.selected[data-suit='♥'] {
+            color: red;
+            border: 1px solid red;
+        }
+
+        label {
+
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            overflow: hidden;
+            padding: 1rem;
+            width: calc(100% - 2rem);
+        }
+
+        #jokerLabel {
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        #hasJokers {
+            height: 1.25rem;
+            width: 1.25rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        fieldset {
+            width: calc(100% - 2rem);
+        }
+
+        #playerLabel {
+            padding-bottom: 0;
+        }
+
+
+    </style>
+</head>
+<body>
+<main>
+    <section class="hide">
+        <h1>How to play</h1>
+        <article id="rules">
+            <h2>What's it called again?</h2>
+            <p>The game goes by many different names including Memory, Matching Pairs, Match Match, Match Up, Memory,
+                Pelmanism, Shinkei-suijaku, Pexeso or simply Pairs as listed on <a
+                        href="https://en.wikipedia.org/wiki/Concentration_(card_game)">The wikipedia page</a></p>
+            <h2>Game Play </h2>
+            <p>The game is very straight forward.</p>
+            <ol>
+                <li>Players Are Added To Game</li>
+                <li>The game starts with a random player once all players are added</li>
+                <li>The player starts their turn by selecting a card and flipping it over</li>
+                <li>The player flips over a second card</li>
+                <li>If the cards match in value they are considered a pair
+                    <ul>
+                        <li>Seven of Hearts and Seven of Spades are considered a pair</li>
+                        <li>Two of clubs and two of diamonds is a pair</li>
+                        <li>Five of spades and six of hearts is not a pair</li>
+                    </ul>
+                </li>
+            </ol>
+            <h2>How </h2>
+        </article>
+    </section>
+    <section id="gameBoard">
+        <nav id="roster">
+            <div id="gameForm">
+                <a>Add Players</a>
+                <article id="playerForm" class="">
+                    <label for="playerName" id="playerLabel">Player Name
+                        <input type="text" id="playerName" placeholder="Sammy"/>
+                    </label>
+                    <button id="playerButton">Add Player</button>
+                    <fieldset>
+                        <legend>Game Options</legend>
+                        <label for="gameType">Select Game Type
+                            <select name="gameType" id="gameType"></select>
+                        </label>
+                        <label for="hasJokers" id="jokerLabel">Has Jokers?
+                            <input type="checkbox" id="hasJokers" name="hasJokers">
+                        </label>
+                    </fieldset>
+                </article>
+                <button id="startGame" class="hide">Start Game</button>
+            </div>
+        </nav>
+        <article id="cards"></article>
+
+    </section>
+</main>
+<script type="text/javascript">
+
+
+  class MemoryGame {
+    constructor() {
+      this.players = {};
+      this.playerOrder = [];
+      this._currentPlayer = null;
+      this._currentPlayerPoisition = 0;
+      this.pairs = 0;
+      this.cards = [];
+      this._selectedCard = null;
+      this.actionActive = false;
+      this.roster = document.getElementById('roster');
+      this.cardContainer = document.getElementById('cards');
+      this.gameFormInput = document.getElementById('playerName');
+      this.gameFormButton = document.getElementById('playerButton');
+      this.gameForm = document.getElementById('gameForm');
+      this.hasJokersCheckBox = document.getElementById('hasJokers');
+      this.startGameButton = document.getElementById('startGame');
+      this.suits = ['♠', '♣', '♥', '♦'];
+      this.namedCardValues = {
+        '1': 'A',
+        '11': 'J',
+        '12': 'Q',
+        '13': 'K',
+      };
+      this.cardMode = '';
+      this.cardModes = [
+        'default',
+        'single flip',
+        'zebra',
+        'any color',
+        'double deck',
+        'different faces',
+        'fancy',
+        'chaos',
+        'Pexeso'];
+      this.gameType = document.getElementById('gameType');
+
+    }
+
+    init() {
+      this.startGameButton.addEventListener('click', this.beginGame.bind(this));
+      this.gameFormButton.addEventListener('click', this.addPlayerToRoster.bind(this));
+      this.generateCardModes();
+    }
+
+    generateCardModes() {
+      for (let mode of this.cardModes) {
+        let option = document.createElement('option');
+        option.value = mode;
+        option.innerText = mode;
+        this.gameType.appendChild(option);
+      }
+    }
+
+    beginGame() {
+      Object.values(this.players).forEach(el => el.element.removeEventListener('contextmenu', this.removePlayer));
+      this.gameForm.classList.add('hide');
+      document.body.classList.add('playing');
+      this.nextPlayer();
+      this.createDeck();
+    }
+
+    createPlayer(value) {
+      let player = document.createElement('a');
+      player.innerHTML = `<strong>${value}</strong><span><b></b>🎴</span>`;
+      player.href = '#';
+      player.addEventListener('contextmenu', this.removePlayer.bind(this));
+      return player;
+    }
+
+    shuffleDeck(deck, shuffled) {
+      shuffled = shuffled || [];
+      let random = Math.floor(Math.random() * deck.length - 1);
+      let plucked = deck.splice(random, 1)[0];
+      if (plucked) shuffled.push(plucked);
+      if (deck.length) return this.shuffleDeck(deck, shuffled);
+
+      shuffled.forEach(el => {
+        this.cardContainer.appendChild(el);
+      });
+
+    }
+
+    removePlayer(ev) {
+      ev.preventDefault();
+      let element = ev.currentTarget;
+      let value = element.querySelector('strong').innerText;
+      delete this.players[value];
+      element.parentNode.removeChild(element);
+      this.showStartGameButton();
+    }
+
+    addPlayerToRoster() {
+      let playerInputValue = this.gameFormInput.value.trim();
+      let player = this.createPlayer(playerInputValue);
+      if (playerInputValue.length && typeof playerInputValue === 'string') {
+        if (!this.players.hasOwnProperty(playerInputValue)) {
+          this.roster.appendChild(player);
+          this.players[playerInputValue] = {};
+          this.players[playerInputValue].element = player;
+          this.players[playerInputValue].pairs = 0;
+          this.gameFormInput.value = '';
+        }
+        this.showStartGameButton();
+      }
+    }
+
+    showStartGameButton() {
+      this.playerOrder = [...Object.keys(this.players)];
+      if (this.playerOrder.length >= 1) {
+        this.startGameButton.classList.remove('hide');
+      } else {
+        this.startGameButton.classList.add('hide');
+      }
+    }
+
+    prepareDeck() {
+      let preparedCards = [];
+      let faces = (this.gameType.value === 'double deck')
+          ? Array.from({length: 27}, (_, i) => i >= 13 ? i - 13 : i + 1)
+          : Array.from({length: 13}, (_, i) => i + 1);
+
+      for (let suit of this.suits) {
+        for (let face of faces) {
+          preparedCards.push(
+              (this.namedCardValues.hasOwnProperty(face) ? this.namedCardValues[face] : parseInt(face)) + suit);
+        }
+      }
+
+      if (this.hasJokersCheckBox.checked) preparedCards.push('🃏♣', '🃏♥');
+      return preparedCards;
+
+    }
+
+    createDeck() {
+      for (let card of this.prepareDeck()) {
+        this.makeCard(card);
+      }
+
+      this.shuffleDeck([...document.querySelectorAll('.card')]);
+    }
+
+    get selectedCard() {
+      return this._selectedCard;
+    }
+
+    set selectedCard(card) {
+      this._selectedCard = card || false;
+
+    }
+
+    getCardSuit(value) {
+      return value.replace(/[^♠♣♥♦]+/, '');
+    }
+
+    getCardValue(value) {
+      return value.replace(/[♠♣♥♦]/, '');
+    }
+
+    makeCard(value, suit) {
+      let card = document.createElement('a');
+      card.addEventListener('click', this.isPair.bind(this));
+      card.classList.add('card');
+      card.innerText = value;
+      card.dataset.suit = this.getCardSuit(value);
+      card.style.color = '♠♣'.includes(card.dataset.suit) ? 'black' : 'red';
+      if (this.hasJokersCheckBox.checked && value.includes('🃏')) card.innerText = value.replace(/[♣♥]+/, '');
+      this.cards.push(value);
+      this.cardContainer.appendChild(card);
+    }
+
+    get currentPlayer() {
+      return this._currentPlayer;
+    }
+
+    set currentPlayer(val) {
+      this._currentPlayer = this.players[this.playerOrder[val]];
+    }
+
+    get currentPlayerPosition() {
+      return this._currentPlayerPoisition;
+    }
+
+    set currentPlayerPosition(num) {
+      this._currentPlayerPoisition = this._currentPlayerPoisition + 1 >= this.playerOrder.length ?
+          0 :
+          this._currentPlayerPoisition + 1;
+    }
+
+    nextPlayer() {
+      let active = document.querySelector('.active');
+      if (active) active.classList.remove('active');
+      this.currentPlayerPosition = this.currentPlayerPosition;
+      this.currentPlayer = this.currentPlayerPosition;
+      this._currentPlayer.element.classList.add('active');
+    }
+
+    isZebra(card1, card2) {
+      if (card1.style.color === card2.style.color) {
+        console.log('matches');
+        return true;
+      } else {
+        console.log(`doesn't match`);
+        return false;
+      }
+    }
+
+    isValidPair(card1, card2) {
+      console.log(this.getCardValue(card1.innerText), this.getCardValue(card2.innerText))
+      return (
+              this.hasJokersCheckBox.checked
+              && card1.innerText === '🃏'
+              && card2.innerText === '🃏') ||
+          (
+              this.gameType.value === 'zebra'
+              && this.isZebra(card1, card2)) ||
+          (
+              this.getCardValue(card1.innerText) === this.getCardValue(card2.innerText)
+          )
+    }
+
+    createTimer(card1, card2) {
+      card1.classList.add('selected');
+      setTimeout(() => {
+        card1.classList.remove('selected');
+        card2.classList.remove('selected');
+        console.log(card1.innerText, card2.innerText, this.isValidPair(card1,card2))
+        if (this.isValidPair(card1, card2)) {
+          card1.classList.add('found');
+          card2.classList.add('found');
+          card1.removeEventListener('click', this.isPair);
+          card2.removeEventListener('click', this.isPair);
+          this.addPoint();
+          if (this.gameType.value === 'single flip') this.nextPlayer();
+        } else {
+          this.nextPlayer();
+        }
+        this._selectedCard = false;
+        this.actionActive = false;
+      }, 750);
+    }
+
+    addPoint() {
+      this._currentPlayer.pairs += 1;
+      this._currentPlayer.element.querySelector('b').innerText = this._currentPlayer.pairs;
+    }
+
+    isPair(ev) {
+      ev.preventDefault();
+      if (this.actionActive) return;
+      let card = ev.currentTarget;
+      let addPoint = false;
+      if (this.selectedCard) {
+        this.actionActive = true;
+        let card1 = card;
+        let card2 = this.selectedCard;
+
+        return this.createTimer(card1, card2);
+
+      } else {
+        this.selectedCard = card;
+        this.selectedCard.classList.add('selected');
+      }
+    }
+  }
+
+  let game;
+  document.addEventListener('DOMContentLoaded', ev => {
+    game = new MemoryGame();
+    game.init();
+
+  });
+
+  // how does it become educational??????? Still don't know what
+  // this means
+
+  // when all cards are found, the winner with the more pairs wins
+
+</script>
+</body>
+</html>
