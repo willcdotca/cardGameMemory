@@ -270,6 +270,14 @@
             padding-bottom: 0;
         }
 
+        body.testing .card {
+            transform: none !important;
+        }
+
+        body.testing .card:before {
+            background: none !important;
+        }
+
 
     </style>
 </head>
@@ -279,7 +287,7 @@
         <h1>How to play</h1>
         <article id="rules">
             <h2>What's it called again?</h2>
-            <p>The game goes by many different names including Memory, Matching Pairs, Match Match, Match Up, Memory,
+            <p>The game goes by many different names including Matching Pairs, Match Match, Match Up, Memory,
                 Pelmanism, Shinkei-suijaku, Pexeso or simply Pairs as listed on <a
                         href="https://en.wikipedia.org/wiki/Concentration_(card_game)">The wikipedia page</a></p>
             <h2>Game Play </h2>
@@ -327,45 +335,101 @@
     </section>
 </main>
 <script type="text/javascript">
-
-
   class MemoryGame {
-    constructor() {
-      this.players = {};
-      this.playerOrder = [];
-      this._currentPlayer = null;
-      this._currentPlayerPoisition = 0;
-      this.pairs = 0;
-      this.cards = [];
-      this._selectedCard = null;
-      this.actionActive = false;
-      this.roster = document.getElementById('roster');
-      this.cardContainer = document.getElementById('cards');
-      this.gameFormInput = document.getElementById('playerName');
-      this.gameFormButton = document.getElementById('playerButton');
-      this.gameForm = document.getElementById('gameForm');
-      this.hasJokersCheckBox = document.getElementById('hasJokers');
-      this.startGameButton = document.getElementById('startGame');
-      this.suits = ['♠', '♣', '♥', '♦'];
-      this.namedCardValues = {
-        '1': 'A',
-        '11': 'J',
-        '12': 'Q',
-        '13': 'K',
-      };
-      this.cardMode = '';
-      this.cardModes = [
-        'default',
-        'single flip',
-        'zebra',
-        'any color',
-        'double deck',
-        'different faces',
-        'fancy',
-        'chaos',
-        'Pexeso'];
-      this.gameType = document.getElementById('gameType');
+    //
+    _currentPlayer = '';
+    _currentPlayerPosition = 0;
+    _currentGameType = '';
+    _selectedCard = {};
+    //
+    players = {};
+    playerOrder = [];
+    pairs = 0;
+    cards = [];
+    suits = ['♠', '♣', '♥', '♦'];
+    namedCardValues = {
+      '1': 'A',
+      '11': 'J',
+      '12': 'Q',
+      '13': 'K',
+    };
+    cardMode = '';
+    cardModes = [
+      'default',
+      'single flip',
+      'zebra',
+      'any color',
+      'double deck',
+      'different faces',
+      'fancy',
+      'chaos',
+      'Pexeso'];
+    actionActive = false;
 
+    //Elements
+    roster = document.getElementById('roster');
+    cardContainer = document.getElementById('cards');
+    gameFormInput = document.getElementById('playerName');
+    gameFormButton = document.getElementById('playerButton');
+    gameForm = document.getElementById('gameForm');
+    hasJokersCheckBox = document.getElementById('hasJokers');
+    startGameButton = document.getElementById('startGame');
+    gameType = document.getElementById('gameType');
+
+
+
+
+    /** @returns {object} */
+    get selectedCard() {
+      return this._selectedCard;
+    }
+
+    /** @param card
+     * @returns {object} */
+    set selectedCard(card) {
+      this._selectedCard = card;
+
+    }
+
+    /**
+     * @returns {object} */
+    get currentPlayer() {
+      let player = this.
+      return this._currentPlayer;
+    }
+    /** @param val
+     * @returns {number} */
+    set currentPlayer(val) {
+      if (typeof val === 'number') {
+        this._currentPlayer = this.players[this.playerOrder[val]];
+      } else if (typeof val === 'object' && val.hasOwnProperty('pairs') && val.hasOwnProperty('element')) {
+        this._currentPlayer = val;
+      }
+    }
+
+
+    get currentPlayerPosition() {
+      return this._currentPlayerPosition;
+    }
+
+    set currentPlayerPosition(num) {
+      this._currentPlayerPosition = num + 1 >= this.playerOrder.length ? 0 : num + 1;
+    }
+
+    get currentGameType() {
+      return this._currentGameType;
+    }
+
+    set currentGameType(type) {
+      if (type && typeof type === 'string' && type.length) this._currentGameType = type;
+    }
+
+    constructor(testing) {
+      this.init();
+      if (testing) {
+        document.body.classList.add('testing');
+        this.createDeck();
+      }
     }
 
     init() {
@@ -387,6 +451,7 @@
       Object.values(this.players).forEach(el => el.element.removeEventListener('contextmenu', this.removePlayer));
       this.gameForm.classList.add('hide');
       document.body.classList.add('playing');
+      this.currentGameType = this.gameType.value;
       this.nextPlayer();
       this.createDeck();
     }
@@ -471,15 +536,6 @@
       this.shuffleDeck([...document.querySelectorAll('.card')]);
     }
 
-    get selectedCard() {
-      return this._selectedCard;
-    }
-
-    set selectedCard(card) {
-      this._selectedCard = card || false;
-
-    }
-
     getCardSuit(value) {
       return value.replace(/[^♠♣♥♦]+/, '');
     }
@@ -500,113 +556,98 @@
       this.cardContainer.appendChild(card);
     }
 
-    get currentPlayer() {
-      return this._currentPlayer;
-    }
-
-    set currentPlayer(val) {
-      this._currentPlayer = this.players[this.playerOrder[val]];
-    }
-
-    get currentPlayerPosition() {
-      return this._currentPlayerPoisition;
-    }
-
-    set currentPlayerPosition(num) {
-      this._currentPlayerPoisition = this._currentPlayerPoisition + 1 >= this.playerOrder.length ?
-          0 :
-          this._currentPlayerPoisition + 1;
-    }
-
     nextPlayer() {
       let active = document.querySelector('.active');
       if (active) active.classList.remove('active');
-      this.currentPlayerPosition = this.currentPlayerPosition;
+      this.currentPlayerPosition = this._currentPlayerPosition;
       this.currentPlayer = this.currentPlayerPosition;
-      this._currentPlayer.element.classList.add('active');
+      let player = this.currentPlayer;
+      if (player.hasOwnProperty('element')) player.element.classList.add('active');
+
     }
 
     isZebra(card1, card2) {
-      if (card1.style.color === card2.style.color) {
-        console.log('matches');
-        return true;
-      } else {
-        console.log(`doesn't match`);
-        return false;
-      }
+      return this.currentGameType === 'zebra' && card1.style.color !== card2.style.color;
+    }
+
+    isJoker(card1, card2) {
+      return card1.innerText === '🃏' && card2.innerText === '🃏';
+    }
+
+    isMatching(card1, card2) {
+      return this.getCardValue(card1.innerText) === this.getCardValue(card2.innerText);
     }
 
     isValidPair(card1, card2) {
-      console.log(this.getCardValue(card1.innerText), this.getCardValue(card2.innerText))
-      return (
-              this.hasJokersCheckBox.checked
-              && card1.innerText === '🃏'
-              && card2.innerText === '🃏') ||
-          (
-              this.gameType.value === 'zebra'
-              && this.isZebra(card1, card2)) ||
-          (
-              this.getCardValue(card1.innerText) === this.getCardValue(card2.innerText)
-          )
+      console.log(this.currentGameType, card1.innerText,card2.innerText)
+      if (this.hasJokersCheckBox.checked) {
+        return this.isJoker(card1, card2);
+      } else {
+        console.log(this.currentGameType === 'zebra')
+        if (this.currentGameType === 'zebra')  return this.isZebra(card1, card2);
+          this.isMatching(card1, card2);
+
+      }
     }
 
     createTimer(card1, card2) {
+
       card1.classList.add('selected');
       setTimeout(() => {
         card1.classList.remove('selected');
         card2.classList.remove('selected');
-        console.log(card1.innerText, card2.innerText, this.isValidPair(card1,card2))
+
         if (this.isValidPair(card1, card2)) {
           card1.classList.add('found');
           card2.classList.add('found');
           card1.removeEventListener('click', this.isPair);
           card2.removeEventListener('click', this.isPair);
           this.addPoint();
-          if (this.gameType.value === 'single flip') this.nextPlayer();
+          console.log('gametype', this.currentGameType);
+          if (this.currentGameType === 'single flip') this.nextPlayer();
         } else {
           this.nextPlayer();
         }
-        this._selectedCard = false;
+
+        this.selectedCard = {};
         this.actionActive = false;
       }, 750);
     }
 
     addPoint() {
-      this._currentPlayer.pairs += 1;
-      this._currentPlayer.element.querySelector('b').innerText = this._currentPlayer.pairs;
+      let player = this.currentPlayer;
+      if (player.hasOwnProperty('pairs') && player.hasOwnProperty('element')) {
+        player.pairs += 1;
+        player.element.querySelector('b').innerText = `${player.pairs || 0}`;
+        player = {pairs: player.pairs, element: player.element};
+        this.currentPlayer = player;
+      }
     }
 
     isPair(ev) {
       ev.preventDefault();
       if (this.actionActive) return;
       let card = ev.currentTarget;
-      let addPoint = false;
       if (this.selectedCard) {
-        this.actionActive = true;
         let card1 = card;
-        let card2 = this.selectedCard;
-
-        return this.createTimer(card1, card2);
-
-      } else {
-        this.selectedCard = card;
-        this.selectedCard.classList.add('selected');
+        if (card.innerText === this.selectedCard.innerText) {
+          this.selectedCard.classList.remove('selected');
+          this.selectedCard = {};
+        } else {
+          this.actionActive = true;
+          return this.createTimer(card1, this.selectedCard);
+        }
       }
+      this.selectedCard = card;
+      this.selectedCard.classList.add('selected');
     }
   }
 
   let game;
   document.addEventListener('DOMContentLoaded', ev => {
-    game = new MemoryGame();
-    game.init();
-
+    let testing = window.location.hash && window.location.hash.slice(1) === 'testing';
+    game = new MemoryGame(testing);
   });
-
-  // how does it become educational??????? Still don't know what
-  // this means
-
-  // when all cards are found, the winner with the more pairs wins
-
 </script>
 </body>
 </html>
