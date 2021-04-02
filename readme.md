@@ -1,5 +1,7 @@
 # Collaborative Build
+
 ## Card Game
+
 ****Concentration**** is also known as:
 
     - Memory
@@ -11,14 +13,15 @@
     -  Pexeso 
     - and potentially More
 
-###Participants 
+### Participants
+
 As of Feb 1 2021 - Mar 31 2021
 
     - ljtechdotca
     - tid (will need to look up tid's full name)
     - willcdotca
 
-##Objective of collaborative build:
+## Objective of collaborative build:
 
     - Built within one html file using html, css, and javascript
     - See the same things from different perspectives
@@ -35,79 +38,79 @@ As of Feb 1 2021 - Mar 31 2021
         - [Does competition increase or decrease personal growth?]
             - Hmmmmm
 
-
-
-
-    
 Reference:
 
 - [Wikipedia: Concentration Card Game](https://en.wikipedia.org/wiki/Concentration_(card_game))
 
-#Day 4 Notes:
+# Day 4 Notes:
 
 Is today the day to rebuild everything that has already been built?
-###Terminology:
+
+### Terminology:
+
 - **Face**:
     - Ace
     - Two through Ten
     - Jack
     - Queen
     - King
-- **Suit**: 
+- **Suit**:
     - ♠
     - ♣
     - ♥
     - ♦
-- **Color**: 
-    - Red 
+- **Color**:
+    - Red
     - Black
     - (Any?)
-- **Game**:  
-    - One or more **Player**s 
-    - Match two **Card**s 
+- **Game**:
+    - One or more **Player**s
+    - Match two **Card**s
     - Until all **Card**s in the **Deck** are paired
-- **GameType**: 
+- **GameType**:
     - **Host** selects **Game** settings to determine the rules
     - Modifies **Deck** quantity, composition, layout, and pair eligibility
-- **Deck**: All **Card**s included at the beginning of a **Game**  [Standard fiftytwo card deck of playing cards](https://en.wikipedia.org/wiki/Concentration_(game_show))
+- **Deck**: All **Card**s included at the beginning of a **
+  Game**  [Standard fiftytwo card deck of playing cards](https://en.wikipedia.org/wiki/Concentration_(game_show))
   unless GameType permits otherwise
-- **Card**: A single unit of a **Deck** 
-- **Component**: Any tag element created by the **Game**, 
-  or preexisting within the body of the page on loading of the page
-- **Player**: The human, or AI, that receives a point for every valid pair of **Card**s 
+- **Card**: A single unit of a **Deck**
+- **Component**: Any tag element created by the **Game**, or preexisting within the body of the page on loading of the
+  page
+- **Player**: The human, or AI, that receives a point for every valid pair of **Card**s
 
+### Components
 
-###Components
-- article#playerForm  
+- article#playerForm
     - input#playerName
     - select#gameType
     - input[type="checkbox"]#gameType
     - button#playerButton
-    
-- ul#currentPlayers  
+
+- ul#currentPlayers
     - a#playerName.value
-    
-- article#cards  
-    - a.card      
-        - .dataset.suit 
-        - .dataset.face 
-        - .dataset.color 
-      
-- Game Controls  
+
+- article#cards
+    - a.card
+        - .dataset.suit
+        - .dataset.face
+        - .dataset.color
+
+- Game Controls
     - Start New Game
     - Restart Current Game
     - Save Game
     - Load Game
-    
-###Game Types:
-- Zebra: 
-  
+
+### Game Types:
+
+- Zebra:
+
     - Faces match
     - Colors !match
     - Suits N/A
 
 - Double Deck
-  
+
     - Faces match
     - Colors N/A
     - Suits match
@@ -116,10 +119,53 @@ Is today the day to rebuild everything that has already been built?
 - Jokers (Toggle)
 
     - Add Two Jokers per deck
-  
 
-        
-        
+----
+
+## Results
+
+Game results as of April 2021.
+
+### ljtechdotca
+
+likes
+- different score style (golf)
+- clean / bright
+- hidden values
+
+
+dislikes
+- lacks options
+- game does not finish (timer does not end)
+
+
+### tid
+
+likes
+- multiple timers
+- division of player scores
+- simplicity of interface
+
+dislikes
+- see through card backs
+- difficult to see cards on green background
+
+code legibility: 7.5/10 
+completion: 8/10
+
+
+
+### willcdotca
+
+likes
+- back faces of deck
+- different options
+
+
+dislikes
+- incomplete (5 out of 8 options completed)
+- dislike lack of found animation
+
 
 
 

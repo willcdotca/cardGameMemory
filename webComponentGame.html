@@ -714,7 +714,7 @@
                 active.dataset.pairs = `${parseInt(active.dataset.pairs) + 1}`;
                 active.querySelector('b').innerText = `${active.dataset.pairs || 0}`;
                 this.currentPoints += 1;
-                if (this.currentPoints === 1) {
+                if (this.currentPoints === this.totalPoints) {
                     this.gameOver();
                     return false;
                 }
