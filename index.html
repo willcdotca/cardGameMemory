@@ -148,6 +148,7 @@
 
         .found {
             opacity: 0.2;
+            z-index:-0;
         }
 
 
@@ -195,6 +196,10 @@
             transform: rotateY(180deg);
 
             overflow: hidden;
+            z-index:1;
+        }
+        .card:hover{
+            z-index:2;
         }
 
         .card[data-suit='♠'], .card[data-suit='♣'] {
@@ -223,6 +228,7 @@
         .card.selected {
             transform: rotateY(0deg) scale(1.1);
             box-shadow: 0 0 0.15rem #00000066;
+            z-index:2;
             /*top: -0.5rem;*/
         }
 
@@ -237,6 +243,10 @@
         .card.selected[data-suit='♦'], .card.selected[data-suit='♥'] {
             color: red;
             border: 1px solid red;
+        }
+        .card.second:before {
+            background-image: url("background2.jpg");
+            background-size: cover;
         }
 
         label {
@@ -277,12 +287,58 @@
         body.testing .card:before {
             background: none !important;
         }
+        body.chaos #cards{
+            position:relative;
+            min-height:50vmin;
+        }
+        body.chaos .card {
+            position: absolute;
+            top:calc(50% - 1.75rem);
+            left:calc(50% - 1.25rem);
+        }
+
+        #gameControls {
+            display: flex;
+            flex-wrap: wrap;
+            position: fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:5vh;
+            overflow: hidden;
+            background:#ddd;
+            z-index: 3;
+
+        }
+        #gameControls button {
+            width:100%;
+            height: 100%;
+        }
+        #gameControls.open {
+            margin:1rem;
+            height: calc(100% - 2rem);
+            width: calc(100% - 2rem);
+        }
+        #gameControls.open button {
+            height: 33%;
+            width: 100%;
+        }
+
+
 
 
     </style>
 </head>
 <body>
 <main>
+
+    <article id="gameControls">
+
+        <button id="gameControlsToggle">Game Controls</button>
+        <button id="newGame">New Game</button>
+        <button id="resetGame">Reset Game</button>
+
+    </article>
     <section class="hide">
         <h1>How to play</h1>
         <article id="rules">
@@ -329,23 +385,24 @@
                 </article>
                 <button id="startGame" class="hide">Start Game</button>
             </div>
+            <div id="currentPlayers"></div>
         </nav>
-        <article id="cards"></article>
+        <card-deck></card-deck>
 
     </section>
+
+
 </main>
 <script type="text/javascript">
   class MemoryGame {
-    //
-    _currentPlayer = '';
-    _currentPlayerPosition = 0;
     _currentGameType = '';
-    _selectedCard = {};
-    //
     players = {};
     playerOrder = [];
+    activePlayer = false;
+    firstCard = false;
+    secondCard = false;
     pairs = 0;
-    cards = [];
+    cards = {};
     suits = ['♠', '♣', '♥', '♦'];
     namedCardValues = {
       '1': 'A',
@@ -375,69 +432,43 @@
     hasJokersCheckBox = document.getElementById('hasJokers');
     startGameButton = document.getElementById('startGame');
     gameType = document.getElementById('gameType');
+    currentPlayers = document.getElementById('currentPlayers');
+    gameControlsToggle = document.getElementById('gameControlsToggle');
+    newGameButton = document.getElementById('newGame');
+    resetGameButton = document.getElementById('resetGame');
 
-
-
-
-    /** @returns {object} */
-    get selectedCard() {
-      return this._selectedCard;
-    }
-
-    /** @param card
-     * @returns {object} */
-    set selectedCard(card) {
-      this._selectedCard = card;
-
-    }
-
-    /**
-     * @returns {object} */
-    get currentPlayer() {
-      let player = this.
-      return this._currentPlayer;
-    }
-    /** @param val
-     * @returns {number} */
-    set currentPlayer(val) {
-      if (typeof val === 'number') {
-        this._currentPlayer = this.players[this.playerOrder[val]];
-      } else if (typeof val === 'object' && val.hasOwnProperty('pairs') && val.hasOwnProperty('element')) {
-        this._currentPlayer = val;
-      }
-    }
-
-
-    get currentPlayerPosition() {
-      return this._currentPlayerPosition;
-    }
-
-    set currentPlayerPosition(num) {
-      this._currentPlayerPosition = num + 1 >= this.playerOrder.length ? 0 : num + 1;
+    constructor(testing) {
+      this.init();
+      if (testing)  document.body.classList.add('testing');
     }
 
     get currentGameType() {
       return this._currentGameType;
     }
-
     set currentGameType(type) {
       if (type && typeof type === 'string' && type.length) this._currentGameType = type;
     }
-
-    constructor(testing) {
-      this.init();
-      if (testing) {
-        document.body.classList.add('testing');
-        this.createDeck();
-      }
-    }
-
     init() {
       this.startGameButton.addEventListener('click', this.beginGame.bind(this));
       this.gameFormButton.addEventListener('click', this.addPlayerToRoster.bind(this));
+      this.newGameButton.addEventListener('click', this.newGame.bind(this));
+      this.resetGameButton.addEventListener('click', this.resetGame.bind(this));
+      this.gameControlsToggle.addEventListener('click',this.gameToggle.bind(this))
       this.generateCardModes();
-    }
 
+    }
+    gameToggle(ev){
+      let parent = ev.currentTarget.parentElement
+      parent.classList.toggle('open')
+      ev.target.innerText = parent.classList.contains('open') ? 'Close Game Controls' : 'Game Controls'
+    }
+    newGame(){
+      console.log("reset players, gametype, and cards")
+
+    }
+    resetGame(){
+      console.log("reset cards")
+    }
     generateCardModes() {
       for (let mode of this.cardModes) {
         let option = document.createElement('option');
@@ -446,20 +477,24 @@
         this.gameType.appendChild(option);
       }
     }
-
     beginGame() {
-      Object.values(this.players).forEach(el => el.element.removeEventListener('contextmenu', this.removePlayer));
+      this.activePlayer = this.currentPlayers.querySelectorAll('a')[0];
       this.gameForm.classList.add('hide');
       document.body.classList.add('playing');
       this.currentGameType = this.gameType.value;
-      this.nextPlayer();
-      this.createDeck();
+      if(this.currentGameType === 'chaos') document.body.classList.add('chaos')
+      this.createDeck(this.prepareDeck());
     }
-
     createPlayer(value) {
       let player = document.createElement('a');
-      player.innerHTML = `<strong>${value}</strong><span><b></b>🎴</span>`;
+      player.innerHTML = `<strong>${value}</strong><span><b>0</b>🎴</span>`;
+      player.dataset.name = value
       player.href = '#';
+      player.dataset.pairs = '0';
+      if (!this.activePlayer) {
+        this.activePlayer = player;
+        player.classList.add('active');
+      }
       player.addEventListener('contextmenu', this.removePlayer.bind(this));
       return player;
     }
@@ -478,12 +513,14 @@
     }
 
     removePlayer(ev) {
-      ev.preventDefault();
-      let element = ev.currentTarget;
-      let value = element.querySelector('strong').innerText;
-      delete this.players[value];
-      element.parentNode.removeChild(element);
-      this.showStartGameButton();
+      if(!document.body.classList.contains('playing')) {
+        ev.preventDefault();
+        let element = ev.currentTarget;
+        let value = element.querySelector('strong').innerText;
+        delete this.players[value];
+        element.parentNode.removeChild(element);
+        this.showStartGameButton();
+      }
     }
 
     addPlayerToRoster() {
@@ -491,10 +528,8 @@
       let player = this.createPlayer(playerInputValue);
       if (playerInputValue.length && typeof playerInputValue === 'string') {
         if (!this.players.hasOwnProperty(playerInputValue)) {
-          this.roster.appendChild(player);
-          this.players[playerInputValue] = {};
-          this.players[playerInputValue].element = player;
-          this.players[playerInputValue].pairs = 0;
+          this.players[playerInputValue] = {element: player, pairs: 0};
+          this.currentPlayers.appendChild(player);
           this.gameFormInput.value = '';
         }
         this.showStartGameButton();
@@ -512,7 +547,7 @@
 
     prepareDeck() {
       let preparedCards = [];
-      let faces = (this.gameType.value === 'double deck')
+      let faces = (this.currentGameType === 'double deck' || this.currentGameType === 'different faces')
           ? Array.from({length: 27}, (_, i) => i >= 13 ? i - 13 : i + 1)
           : Array.from({length: 13}, (_, i) => i + 1);
 
@@ -528,11 +563,11 @@
 
     }
 
-    createDeck() {
-      for (let card of this.prepareDeck()) {
-        this.makeCard(card);
-      }
-
+    createDeck(deck, index = 0) {
+      let card = deck.pop()
+      let newCard = this.makeCard(card,index)
+      this.cardContainer.appendChild(newCard);
+      if(deck.length) this.createDeck(deck,index+1);
       this.shuffleDeck([...document.querySelectorAll('.card')]);
     }
 
@@ -541,112 +576,129 @@
     }
 
     getCardValue(value) {
-      return value.replace(/[♠♣♥♦]/, '');
+      return value.replace(/[♠♣♥♦]+/, '');
     }
 
-    makeCard(value, suit) {
+    makeCard(value,index) {
       let card = document.createElement('a');
-      card.addEventListener('click', this.isPair.bind(this));
       card.classList.add('card');
       card.innerText = value;
+      card.dataset.face = this.getCardValue(value)
       card.dataset.suit = this.getCardSuit(value);
-      card.style.color = '♠♣'.includes(card.dataset.suit) ? 'black' : 'red';
+      card.dataset.color = '♠♣'.includes(card.dataset.suit) ? 'black' : 'red';
+      card.addEventListener('click', this.isPair.bind(this))
+      if(this.currentGameType === 'different faces' && index%2===0 )card.classList.add('second')
+      if(this.currentGameType === 'chaos') {
+        let x = Math.floor(Math.random()*40)
+        let y = Math.floor(Math.random()*20)
+        let r = Math.floor(Math.random()*90)
+        x = x%2===0? x : x*-1;
+        y = y%2===0? y : y*-1;
+        r = r%2===0? r : r*-1;
+        card.style.transform = `translate(${x}vmin,${y}vmin) rotateZ(${r}deg)`
+      }
       if (this.hasJokersCheckBox.checked && value.includes('🃏')) card.innerText = value.replace(/[♣♥]+/, '');
-      this.cards.push(value);
-      this.cardContainer.appendChild(card);
+      return card
     }
 
     nextPlayer() {
-      let active = document.querySelector('.active');
-      if (active) active.classList.remove('active');
-      this.currentPlayerPosition = this._currentPlayerPosition;
-      this.currentPlayer = this.currentPlayerPosition;
-      let player = this.currentPlayer;
-      if (player.hasOwnProperty('element')) player.element.classList.add('active');
+      this.activePlayer.classList.remove('active');
+      this.activePlayer = this.activePlayer.nextElementSibling || this.currentPlayers.querySelectorAll('a')[0];
+      this.activePlayer.classList.add('active');
 
     }
-
-    isZebra(card1, card2) {
-      return this.currentGameType === 'zebra' && card1.style.color !== card2.style.color;
+    isDoubleDeck(){
+      return this.firstCard.innerText === this.secondCard.innerText
     }
 
-    isJoker(card1, card2) {
-      return card1.innerText === '🃏' && card2.innerText === '🃏';
+    isZebra() {
+      return this.currentGameType === 'zebra'
+          && this.firstCard.dataset.color !== this.secondCard.dataset.color
+          && this.isMatching();
     }
 
-    isMatching(card1, card2) {
-      return this.getCardValue(card1.innerText) === this.getCardValue(card2.innerText);
+    isJoker() {
+      return this.firstCard.innerText === '🃏' && this.secondCard.innerText === '🃏';
     }
 
-    isValidPair(card1, card2) {
-      console.log(this.currentGameType, card1.innerText,card2.innerText)
-      if (this.hasJokersCheckBox.checked) {
-        return this.isJoker(card1, card2);
-      } else {
-        console.log(this.currentGameType === 'zebra')
-        if (this.currentGameType === 'zebra')  return this.isZebra(card1, card2);
-          this.isMatching(card1, card2);
+    isMatching() {
+      return this.firstCard.dataset.face === this.secondCard.dataset.face;
+    }
 
+    isValidPair() {
+      if (this.hasJokersCheckBox.checked && this.firstCard.innerText === '🃏') {
+        console.log('joker')
+        return this.isJoker();
       }
+      if(this.currentGameType === 'zebra') {
+        console.log('joker zebra')
+        return this.isZebra()
+      }
+      if(this.currentGameType === 'double deck'){
+        return this.isDoubleDeck()
+      }
+
+      return this.isMatching();
+
     }
 
-    createTimer(card1, card2) {
-
-      card1.classList.add('selected');
+    createTimer() {
+      this.firstCard.classList.add('selected');
       setTimeout(() => {
-        card1.classList.remove('selected');
-        card2.classList.remove('selected');
+        this.firstCard.classList.remove('selected');
+        this.secondCard.classList.remove('selected');
 
-        if (this.isValidPair(card1, card2)) {
-          card1.classList.add('found');
-          card2.classList.add('found');
-          card1.removeEventListener('click', this.isPair);
-          card2.removeEventListener('click', this.isPair);
+        if (this.isValidPair()) {
+          this.firstCard.classList.add('found');
+          this.secondCard.classList.add('found');
+
+          this.firstCard.dataset.found = this.activePlayer.dataset.name
+          this.secondCard.dataset.found = this.activePlayer.dataset.name
+
           this.addPoint();
-          console.log('gametype', this.currentGameType);
           if (this.currentGameType === 'single flip') this.nextPlayer();
         } else {
           this.nextPlayer();
         }
-
-        this.selectedCard = {};
+        this.secondCard = false;
+        this.firstCard  = false;
         this.actionActive = false;
       }, 750);
     }
 
     addPoint() {
-      let player = this.currentPlayer;
-      if (player.hasOwnProperty('pairs') && player.hasOwnProperty('element')) {
-        player.pairs += 1;
-        player.element.querySelector('b').innerText = `${player.pairs || 0}`;
-        player = {pairs: player.pairs, element: player.element};
-        this.currentPlayer = player;
-      }
+        this.activePlayer.dataset.pairs = `${parseInt(this.activePlayer.dataset.pairs)+1}`;
+        this.activePlayer.querySelector('b').innerText = `${this.activePlayer.dataset.pairs || 0}`;
     }
 
     isPair(ev) {
       ev.preventDefault();
       if (this.actionActive) return;
-      let card = ev.currentTarget;
-      if (this.selectedCard) {
-        let card1 = card;
-        if (card.innerText === this.selectedCard.innerText) {
-          this.selectedCard.classList.remove('selected');
-          this.selectedCard = {};
+      if(ev.target.dataset.found && ev.target.dataset.found.length) return
+      this.firstCard = ev.target;
+
+      if (this.secondCard) {
+        if (this.firstCard.innerText === this.secondCard.innerText && !this.hasJokersCheckBox.checked) {
+          this.secondCard.classList.remove('selected');
+          this.secondCard = false;
         } else {
           this.actionActive = true;
-          return this.createTimer(card1, this.selectedCard);
+          return this.createTimer();
         }
+      } else {
+        this.firstCard.classList.add('selected');
+        this.secondCard = this.firstCard;
+        this.firstCard = false;
       }
-      this.selectedCard = card;
-      this.selectedCard.classList.add('selected');
     }
   }
 
   let game;
   document.addEventListener('DOMContentLoaded', ev => {
     let testing = window.location.hash && window.location.hash.slice(1) === 'testing';
+    console.time('gameLength')
     game = new MemoryGame(testing);
+    console.timeEnd('gameLength')
   });
 </script>
 </body>

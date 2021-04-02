@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Component Version of Concentration Game</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #00531f, #003208);
+            height: 100vh;
+            width: 100%;
+        }
+
+
+    </style>
+
+</head>
+<body>
+
+<card-game>
+    <template id="memory-template">
+        <!--    <link rel="preconnect" href="https://fonts.gstatic.com">-->
+        <!--    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@800&family=Roboto&display=swap" rel="stylesheet">-->
+        <style>
+
+            * {
+                margin: 0;
+                padding: 0;
+            }
+
+
+            p, li, label, input {
+                font-family: 'Roboto', sans-serif;
+                color: #353535;
+
+            }
+
+            h1, h2, h3, h4, h4, h5, h6, button {
+                font-family: 'Poppins', sans-serif;
+                font-weight: bolder;
+
+            }
+
+            h1 {
+                margin: 1rem 0;
+                color: #156900;
+                /*text-shadow: 0 0 15rem black;*/
+                /*-webkit-text-stroke: 2px #116000;*/
+            }
+
+            h2 {
+                margin: 0.5rem 0;
+                color: #00531f;
+            }
+
+            a {
+                color: #000000;
+            }
+
+            h3 {
+                display: flex;
+                color: #00531f;
+                margin: 0.5rem 0;
+                width: 100%;
+            }
+
+            h4 {
+
+                color: #1b8a0f;
+            }
+
+            small {
+                font-size: 0.75rem;
+                color: #ddd;
+                margin: 0 0 0 1rem;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+
+            }
+
+            header, footer, main {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+
+            }
+
+
+            .selected {
+                transform: rotateY(0);
+                border: 1px solid black;
+                box-shadow: 0 2px 5px #000000CC;
+            }
+
+            .selected:before {
+                transform: rotateY(180deg);
+            }
+
+            [color='red'].flipped {
+                border-color: red;
+            }
+
+            .hide {
+                display: none !important;
+            }
+
+
+            :host {
+                all: initial;
+                display: flex;
+                contain: content;
+                overflow: hidden;
+                grid-template-columns: 1fr;
+                grid-gap: 2rem;
+                font-size: 1.25rem;
+                width: 100%;
+                height: 100vh;
+                align-content: center;
+                justify-content: center;
+
+            }
+
+
+            card-deck,
+            playing-card,
+            game-options,
+            player-form,
+            game-rules,
+            intro-screen,
+            game-results {
+                display: flex;
+                padding: 1rem 3rem;
+                align-items: center;
+                justify-content: space-around;
+                flex-direction: column;
+                background: white;
+                border-radius: 1rem;
+                height: 90vmin;
+                width: 60vmin;
+            }
+
+            playing-card, card-deck {
+                min-height: unset;
+            }
+
+
+            footer {
+                width:100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: row;
+
+
+            }
+
+            card-deck-button, game-options-button, player-form-button, game-rules-button, intro-screen-button {
+
+                width: 100%;
+                height: 40px;
+                line-height: 40px;
+                margin: 0.5rem;
+                border: 1px solid black;
+                text-align: center;
+                cursor: pointer;
+            }
+
+
+
+            game-board {
+                position: relative;
+                height: calc(100% - 2rem);
+                width: calc(100% - 2rem);
+
+                align-items: center;
+                justify-content: center;
+                display: flex;
+
+            }
+
+
+            card-deck {
+                display: grid;
+                grid-template-columns: repeat(13, minmax(0, 30vmin));
+                grid-template-rows: repeat(9, minmax(0, 10vmin));
+                grid-gap: 0.5rem;
+                background-color: transparent;
+                width: 100%;
+                max-width: 1024px;
+
+            }
+
+            card-deck player-roster {
+                position: absolute;
+                bottom: 10vmin;
+                left:0;
+                max-height: unset;
+                overflow-y: unset;
+            }
+
+            card-deck player-roster a {
+                display: none;
+            }
+
+            card-deck player-roster:hover player-card {
+                display: flex;
+            }
+
+            card-deck player-card,
+            player-form player-roster span {
+                display: none;
+            }
+
+            playing-card {
+                border-radius: 0.25rem;
+                background: white;
+                height: 9vmin;
+                width: 6vmin;
+                transform: rotateY(-180deg);
+                transition: transform 100ms linear;
+                position: relative;
+                overflow: hidden;
+                z-index: 0;
+                padding: 0;
+                max-height: 15rem;
+                box-shadow: 0 0 4px black;
+                border: 1px solid black;
+                cursor: pointer;
+                display: flex;
+                align-content: center;
+                justify-content: center;
+            }
+
+            playing-card card-face, playing-card card-suit {
+                position: absolute;
+                top: 0.2vmin;
+                left: 0.3vmin;
+                height: calc(100% - 0.2vmin);
+                width: calc(100% - 0.6vmin);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 3vmin;
+            }
+
+
+            playing-card card-suit {
+                font-size: 13vmin;
+                opacity: 0.2;
+                align-items: center;
+                justify-content: center;
+                top: -0.2vmin;
+            }
+
+
+            player-form label {
+
+                width: 100%;
+                margin-top: 2.5vh;
+
+            }
+
+            player-form input {
+                padding: 1rem;
+                width: calc(100% - 2.2rem);
+
+            }
+
+            player-form button {
+                width: 100%;
+                padding: 1rem 0;
+
+            }
+
+            player-form player-roster {
+                max-height: 3rem;
+                overflow-y: scroll;
+            }
+
+
+            player-roster {
+                display: flex;
+                background: #11111144;
+                flex-grow: 1;
+                flex-wrap: wrap;
+                justify-content: center;
+                width: 100%;
+                max-width: calc(1024px - 2rem);
+
+
+
+            }
+
+            player-card {
+                background: #ccc;
+                width: 100%;
+                display: flex;
+                padding: 1rem;
+                margin: 0;
+                justify-content: space-between;
+                color: #444;
+            }
+
+            player-card.active {
+                background: #b6ffca !important;
+                color: green;
+                outline: 1px solid green;
+                display: flex;
+            }
+
+            player-card:nth-child(odd) {
+                background: #aaa;
+            }
+
+            game-options ul, game-rules ul {
+
+                margin-top: 3rem;
+                flex-wrap: wrap;
+                display: flex;
+                list-style: none;
+            }
+
+            game-options h3 {
+                cursor: pointer;
+            }
+
+            game-options ul {
+                margin: 0.5rem 0;
+                width: 100%;
+            }
+
+            game-options label {
+                width: calc(100% - 1rem);
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                display: flex;
+                text-transform: capitalize;
+                margin: 0.05rem 0.5rem;
+
+
+            }
+
+            game-options input {
+                height: 1.5rem;
+                width: 1.5rem;
+                float: right;
+            }
+
+            game-options li ul li {
+                padding: 0;
+
+            }
+
+            game-rules .playerTurn {
+                background: #aaaaaa11;
+                padding: 1rem;
+            }
+
+            game-rules dt {
+                margin: 0.25rem 0;
+            }
+
+            game-rules dl {
+                margin-left: 1rem;
+            }
+
+            game-rules li {
+                margin: 0.55rem 0 0.4rem 0.6rem;
+                width: calc(100% - 3rem);
+
+            }
+
+            game-rules ol {
+                list-style: lower-roman;
+            }
+
+            game-rules article {
+                margin-top: 2rem;
+                min-width: 90%;
+            }
+
+            dl.valid, dl.invalid {
+                padding: 0.5rem;
+                outline: transparent 1px solid;
+                margin: 0.5rem;
+                color: #efefef;
+            }
+
+            dl.valid {
+                outline-color: #52ff0055;
+                background-color: #52ff0033;
+            }
+
+            dl.invalid {
+                outline-color: #FF090055;
+                background-color: #FF090033;
+            }
+
+            game-rules ul ol ol li {
+                margin: 0;
+            }
+
+            game-rules ul ol ol ul {
+                margin: 0;
+            }
+
+            game-rules ul ol ol ul li {
+                margin: 0 1.25rem;
+            }
+
+
+            playing-card:before {
+                height: 100%;
+                width: 100%;
+                position: absolute;
+                background: url("playingCardBack.png") center center;
+                background-size: cover;
+                content: '';
+                backface-visibility: hidden;
+
+
+            }
+
+            playing-card.found {
+                opacity: 0;
+                visibility: hidden;
+
+            }
+
+            [game-option-container] {
+                width: 100%;
+            }
+
+
+        </style>
+        <game-board>
+            <intro-screen>
+                <header>
+                    <h1>Memory!</h1>
+                    <h3>The card game you'll always remember</h3>
+                </header>
+                <main>
+                    <p>The game goes by many different names including Matching Pairs, Match Match, Match Up, Memory,
+                        Pelmanism, Shinkei-suijaku, Pexeso or simply Pairs as listed on <br><br><a
+                                href="https://en.wikipedia.org/wiki/Concentration_(card_game)">The wikipedia page</a>
+                    </p>
+                </main>
+                <footer>
+                    <game-rules-button>How to Play</game-rules-button>
+                    <game-options-button>Select Options</game-options-button>
+                </footer>
+            </intro-screen>
+            <game-rules>
+                <header>
+                    <h2>How to Play</h2>
+                    <p>Can you remember where you last saw that card you need?</p>
+                </header>
+                <main>
+                    <h3>Game</h3>
+                    <ol>
+                        <li>Select game options</li>
+                        <li>Add players</li>
+                        <li>Begin game</li>
+                        <li>A player flips minimum two cards per turn.</li>
+                        <li>Player with most pairs at end of game wins.</li>
+                    </ol>
+                </main>
+
+                <footer>
+                    <intro-screen-button>Back</intro-screen-button>
+                    <game-options-button>Select Options</game-options-button>
+                </footer>
+            </game-rules>
+            <game-options>
+                <header>
+                    <h2>Game Options</h2>
+                    <p>Cling on the heading reveals game modifiers. Default is 52 cards.</p>
+
+                </header>
+                <main>
+                    <h3>Turn</h3>
+                    <turn-options game-option-container class="hide">
+                        <label for="Zebra">zebra</label>
+                        <input type="checkbox" id="Zebra"/>
+                        <small>Must have opposite color for valid pair</small>
+                        <label for="Single Flip">single flip</label>
+                        <input type="checkbox" id="singleFlip"/>
+                        <small>Player does not continue after pair</small>
+                        <label for="Pexeso">Pexeso</label>
+                        <input type="checkbox" id="Pexeso"/>
+                        <small>Emoji Faces</small>
+                    </turn-options>
+
+                    <h3>Deck</h3>
+                    <deck-options game-option-container class="hide">
+                        <label for="Jokers">jokers</label>
+                        <input type="checkbox" id="hasJokers"/>
+                        <small>Include Jokers</small>
+                        <label for="DoubleDeck">double decker</label>
+                        <input type="checkbox" id="doubleDeck"/>
+                        <small>Increase the deck size by double</small>
+                        <label for="DeckStyle">different faces</label>
+                        <input type="checkbox" id="differentFaces"/>
+                        <small>Change color of deck</small>
+                    </deck-options>
+
+                    <h3>Board</h3>
+                    <board-options game-option-container type="option-container" class="hide">
+                        <label for="Fancy">fancy</label>
+                        <input name="order" id="Fancy" type="radio" gameType="fancy"/>
+                        <small>Cards in a shape</small>
+                        <label for="Chaos">chaos</label>
+                        <input name="order" id="Chaos" type="radio" gameType="chaos"/>
+                        <small>Cards scattered</small>
+                        <label for="None">none</label>
+                        <input name="order" id="None" type="radio" checked="checked" gameType="none"/>
+                        <small>Regular Format</small>
+                    </board-options>
+                </main>
+                <footer>
+                    <game-rules-button>How</game-rules-button>
+                    <player-form-button>Add Players</player-form-button>
+                </footer>
+            </game-options>
+            <player-form>
+                <header>
+                    <h2>Add Players</h2>
+                    <p>Up to seven people can play at once.</p>
+                </header>
+                <main>
+                    <label for="playerName" id="playerLabel">Name</label>
+                    <input type="text" id="playerName" placeholder="Sammy"/>
+                    <button id="playerButton">Add</button>
+
+                    <label for="player-roster">Roster</label>
+                    <player-roster></player-roster>
+                </main>
+                <footer>
+                    <game-options-button>Options</game-options-button>
+                    <card-deck-button>Begin</card-deck-button>
+                </footer>
+
+            </player-form>
+            <game-results>
+                <header><h1>Player Name Won!</h1></header>
+                <main></main>
+                <footer>
+                    <intro-screen-button>Home</intro-screen-button>
+                    <game-options-button>New Game</game-options-button>
+                </footer>
+            </game-results>
+        </game-board>
+    </template>
+</card-game>
+
+<script type="text/javascript">
+    class Memory extends HTMLElement {
+
+        Player = class {
+            activePlayer = null;
+            element = null;
+            roster = null;
+
+            constructor(parent) {
+                this.button = parent.shadow.getElementById('playerButton');
+                this.input = parent.shadow.getElementById('playerName');
+                this.roster = parent.shadow.querySelector('player-roster');
+                this.button.addEventListener('click', ev => {
+                    let name = this.input.value;
+                    if (!this.roster.querySelector(`#player${name}`) && name.length && name.match(/[a-zA-Z0-9]/gi)) {
+                        this.roster.appendChild(this.createPlayer(name));
+                        this.input.value = '';
+                    }
+                });
+            }
+
+            createPlayer(value) {
+                let playerCard = document.createElement('player-card');
+                playerCard.innerHTML = `<strong>${value}</strong><a href="#">Remove</a><span> <b>0</b>🎴</span>`;
+                playerCard.dataset.name = value;
+                playerCard.id = `player${value}`;
+                playerCard.href = '#';
+                playerCard.dataset.pairs = '0';
+                if (!this.activePlayer) {
+                    this.activePlayer = playerCard;
+                    playerCard.classList.add('active');
+                    console.log('active', this.activePlayer);
+                }
+
+                playerCard.querySelector('a').addEventListener('click', ev => {
+                    this.removePlayer(ev);
+                });
+
+                return playerCard;
+            }
+
+            nextPlayer() {
+                this.activePlayer.classList.remove('active');
+                this.activePlayer = this.activePlayer.nextElementSibling ||
+                        this.roster.querySelectorAll('player-card')[0];
+                this.activePlayer.classList.add('active');
+
+            }
+
+            removePlayer(ev) {
+                ev.preventDefault();
+                let element = ev.currentTarget;
+                element.parentNode.parentNode.removeChild(element.parentNode);
+
+            }
+        };
+        Options = class {
+            options = {
+                singleFlip: false,
+                Zebra: false,
+                Pexeso: false,
+                hasJokers: false,
+                doubleDeck: false,
+                differentFaces: false,
+                Fancy: false,
+                Chaos: false,
+                None: false,
+            };
+            inputs = {};
+            actionActive = false;
+            firstCard = null;
+            secondCard = null;
+            game = [];
+            totalPoints = 0;
+            currentPoints = 0;
+
+            constructor(parent) {
+                this.shadow = parent.shadow;
+                this.parent = parent;
+                for (let option of Object.keys(this.options)) {
+                    this.inputs[option] = parent.shadow.getElementById(option);
+                }
+
+            }
+
+            getOptions() {
+                let values = this.shadow.querySelectorAll('game-options input');
+                this.game = [...Object.values(values).filter(el => el.checked ? el : false)].map(a => a.id);
+            }
+
+            doubleDeck() {
+                return this.firstCard.getAttribute('face') === this.secondCard.getAttribute('face') &&
+                        this.firstCard.getAttribute('suit') === this.secondCard.getAttribute('suit');
+            }
+
+            zebra() {
+                console.log('zebra', this.firstCard.getAttribute('color'), this.secondCard.getAttribute('color'),
+                        this.isMatching());
+                return this.firstCard.getAttribute('color') !== this.secondCard.getAttribute('color') &&
+                        this.isMatching();
+            }
+
+            hasJokers() {
+                return this.firstCard.getAttribute('face') && this.secondCard.innerText === '🃏';
+            }
+
+            isMatching() {
+                return this.firstCard.getAttribute('face') === this.secondCard.getAttribute('face');
+            }
+
+            isValidPair() {
+
+                if (this.game.includes('hasJokers') && this.firstCard.getAttribute('face') ===
+                        '🃏') return this.hasJokers();
+                if (this.game.includes('Zebra')) return this.zebra();
+                return this.isMatching();
+            }
+
+            createTimer() {
+
+                this.firstCard.classList.add('selected');
+                setTimeout(() => {
+                    this.firstCard.classList.remove('selected');
+                    this.secondCard.classList.remove('selected');
+                    let active = this.parent.playerForm.activePlayer;
+
+                    if (this.isValidPair()) {
+                        this.firstCard.classList.add('found');
+                        this.secondCard.classList.add('found');
+
+                        this.firstCard.dataset.found = active.dataset.name;
+                        this.secondCard.dataset.found = active.dataset.name;
+
+                        if (!this.addPoint(active)) return;
+
+                        if (this.game.includes('singleFlip')) this.parent.playerForm.nextPlayer();
+
+                    } else {
+                        this.parent.playerForm.nextPlayer();
+                    }
+                    this.secondCard = false;
+                    this.firstCard = false;
+                    this.actionActive = false;
+                }, 750);
+            }
+
+            addPoint(active) {
+                active.dataset.pairs = `${parseInt(active.dataset.pairs) + 1}`;
+                active.querySelector('b').innerText = `${active.dataset.pairs || 0}`;
+                this.currentPoints += 1;
+                if (this.currentPoints === 1) {
+                    this.gameOver();
+                    return false;
+                }
+                return true;
+            }
+
+            gameOver() {
+                const result = this.shadow.querySelector('game-results');
+                this.shadow.querySelector('card-deck').classList.add('hide');
+                result.querySelector('main').appendChild(this.parent.playerForm.roster);
+                result.classList.remove('hide');
+                this.firstCard = false;
+                this.secondCard = false;
+                this.actionActive = false;
+                this.parent.playerForm.activePlayer.classList.remove('active')
+                this.parent.playerForm.activePlayer = false
+
+                //who won the game
+            }
+
+            isPair(el) {
+
+
+
+                if (this.actionActive) return;
+                if (el.dataset.found && el.dataset.found.length) return;
+                this.firstCard = el;
+                if (this.secondCard) {
+                    if (this.firstCard.innerText === this.secondCard.innerText) {
+                        this.secondCard.classList.remove('selected');
+                        this.secondCard = false;
+                    } else {
+                        this.actionActive = true;
+                        return this.createTimer();
+                    }
+                } else {
+                    this.firstCard.classList.add('selected');
+                    this.secondCard = this.firstCard;
+                    this.firstCard = false;
+                }
+            }
+
+        };
+        Deck = class {
+            suits = ['♠', '♣', '♥', '♦'];
+            faceCards = {'1': 'A', '11': 'J', '12': 'Q', '13': 'K'};
+            element = null;
+
+            constructor(form, options) {
+                this.form = form;
+                this.options = options;
+            }
+
+            init() {
+                this.element = document.createElement('card-deck');
+                return this.element;
+            }
+
+            generateCard(face, suit, color) {
+                let faceValue = this.faceCards.hasOwnProperty(face.toString()) ? this.faceCards[face] : face;
+                color = color ? color : suit >= 2 ? 'red' : 'black';
+                let card = document.createElement('playing-card');
+                card.setAttribute('face', faceValue || 'A');
+                card.setAttribute('suit', this.suits[suit] || '♠');
+                card.setAttribute('color', color);
+                card.innerHTML = `<card-face>${faceValue}</card-face><card-suit>${this.suits[suit]}</card-suit>`;
+                card.style.color = color;
+
+                card.addEventListener('click', ev => {
+                    ev.preventDefault();
+                    this.options.isPair(card);
+                });
+
+                return card;
+            }
+
+            generateDeck() {
+                let suitRange = Array.from({length: 13}, (_, i) => i + 1);
+                if (this.options.game.includes('hasJokers')) {
+                    this.element.appendChild(this.generateCard('🃏', 0));
+                    this.element.appendChild(this.generateCard('🃏', 2));
+                }
+
+                for (let suit in this.suits) {
+                    for (let face of suitRange) {
+                        this.element.appendChild(this.generateCard(face, suit));
+                        if (this.options.game.includes('doubleDeck')) this.element.appendChild(
+                                this.generateCard(face, suit));
+                    }
+                }
+
+                this.shuffleDeck([...Object.values(this.element.querySelectorAll('playing-card'))]);
+                this.element.classList.remove('hide');
+
+            }
+
+            shuffleDeck(cards, count = 0, duration = 416) {
+                count += 1;
+                let rndm = Math.floor(Math.random() * cards.length);
+                let random = Math.floor(Math.random() * cards.length);
+                this.element.insertBefore(cards[rndm], cards[random]);
+                if (duration !== count) return this.shuffleDeck(cards, count);
+            }
+
+        };
+        playing = false;
+
+        constructor() {
+            super();
+            this.shadow = this.attachShadow({mode: 'open'});
+            this.templateElement = document.getElementById('memory-template').content;
+
+            this.shadow.appendChild(this.templateElement);
+            this.gameBoard = this.shadow.querySelector('game-board');
+            this.playerForm = new this.Player(this);
+            this.gameOptions = new this.Options(this);
+        }
+
+        setupPages(pages) {
+            for (let page of pages) {
+                page.classList.add('hide');
+                let buttons = page.querySelector('footer');
+                this.setupButtons(buttons, pages);
+                this.setupToggles(page);
+            }
+            pages[0].classList.remove('hide');
+        }
+
+        setupToggles(page) {
+            let headings = page.querySelectorAll('h3');
+            headings.forEach(el =>
+                    el.addEventListener('click', ev => {
+                        headings.forEach(el => el.nextElementSibling.classList.add('hide'));
+                        ev.currentTarget.nextElementSibling.classList.toggle('hide');
+                    }),
+            );
+        }
+
+        beginGame() {
+            this.gameOptions.getOptions();
+            this.gameDeck.generateDeck();
+            this.shadow.querySelector('player-form').classList.add('hide');
+
+            if (!this.shadow.querySelector('player-card')) {
+                this.playerForm.roster.appendChild(this.playerForm.createPlayer('Player 1'));
+            }
+            this.gameOptions.totalPoints = this.gameDeck.element.querySelectorAll('playing-card').length / 2;
+            this.gameDeck.element.appendChild(this.playerForm.roster);
+
+        }
+
+        clearGame() {
+            //goes to options
+            //wipes deck
+
+            this.gameOptions.currentPoints = 0
+            this.shadow.querySelector('card-deck').replaceWith(this.gameDeck.init())
+            this.shadow.querySelector('player-form main').appendChild(this.playerForm.roster)
+
+        }
+
+        newGame() {
+            //wipe players
+            // wipe points
+            //wipe options
+
+            //wipe deck
+            this.gameOptions.currentPoints = 0;
+            let options = this.shadow.querySelectorAll('game-options input');
+            for (let gameOptionInput of options) {
+                gameOptionInput.checked = false;
+            }
+            options[options.length - 1].checked = true;
+
+            this.playerForm.roster.innerHTML = '';
+
+            this.shadow.querySelector('player-form main').appendChild(this.playerForm.roster);
+            this.shadow.querySelector('card-deck').replaceWith(this.gameDeck.init());
+
+
+        }
+
+        setupButtons(buttons, pages) {
+            if (buttons) {
+                for (let button of buttons.children) {
+                    let name = button.tagName.slice(0, -7).toLowerCase();
+                    button.addEventListener('click', ev => {
+                        if (name === 'card-deck') this.beginGame();
+                        if (name === 'game-options') this.clearGame();
+                        if (name === 'intro-screen') this.newGame();
+
+                        [...pages].forEach(e => e.classList.add('hide'));
+                        this.shadow.querySelector(name).classList.remove('hide');
+
+                    });
+                }
+            }
+        }
+
+        connectedCallback() {
+            const board = this.shadow.querySelector('game-board');
+            this.gameDeck = new this.Deck(this.playerForm, this.gameOptions);
+            board.appendChild(this.gameDeck.init());
+            let pages = board.children;
+            this.setupPages(pages);
+        }
+
+    }
+
+    window.addEventListener('DOMContentLoaded', ev => {
+        customElements.define('card-game', Memory);
+    });
+
+
+</script>
+
+</body>
+</html>

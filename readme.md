@@ -1,6 +1,6 @@
 # Collaborative Build
 ## Card Game
-**Concentration** is also known as:
+****Concentration**** is also known as:
 
     - Memory
     - Matching Pairs
@@ -34,11 +34,92 @@ As of Feb 1 2021 - Mar 31 2021
             - ie. How to reach, if only for a moment, a person best
         - [Does competition increase or decrease personal growth?]
             - Hmmmmm
+
+
+
+
     
 Reference:
 
 - [Wikipedia: Concentration Card Game](https://en.wikipedia.org/wiki/Concentration_(card_game))
 
+#Day 4 Notes:
+
+Is today the day to rebuild everything that has already been built?
+###Terminology:
+- **Face**:
+    - Ace
+    - Two through Ten
+    - Jack
+    - Queen
+    - King
+- **Suit**: 
+    - ♠
+    - ♣
+    - ♥
+    - ♦
+- **Color**: 
+    - Red 
+    - Black
+    - (Any?)
+- **Game**:  
+    - One or more **Player**s 
+    - Match two **Card**s 
+    - Until all **Card**s in the **Deck** are paired
+- **GameType**: 
+    - **Host** selects **Game** settings to determine the rules
+    - Modifies **Deck** quantity, composition, layout, and pair eligibility
+- **Deck**: All **Card**s included at the beginning of a **Game**  [Standard fiftytwo card deck of playing cards](https://en.wikipedia.org/wiki/Concentration_(game_show))
+  unless GameType permits otherwise
+- **Card**: A single unit of a **Deck** 
+- **Component**: Any tag element created by the **Game**, 
+  or preexisting within the body of the page on loading of the page
+- **Player**: The human, or AI, that receives a point for every valid pair of **Card**s 
+
+
+###Components
+- article#playerForm  
+    - input#playerName
+    - select#gameType
+    - input[type="checkbox"]#gameType
+    - button#playerButton
+    
+- ul#currentPlayers  
+    - a#playerName.value
+    
+- article#cards  
+    - a.card      
+        - .dataset.suit 
+        - .dataset.face 
+        - .dataset.color 
+      
+- Game Controls  
+    - Start New Game
+    - Restart Current Game
+    - Save Game
+    - Load Game
+    
+###Game Types:
+- Zebra: 
+  
+    - Faces match
+    - Colors !match
+    - Suits N/A
+
+- Double Deck
+  
+    - Faces match
+    - Colors N/A
+    - Suits match
+    - Double the quantity of the deck
+
+- Jokers (Toggle)
+
+    - Add Two Jokers per deck
+  
+
+        
+        
 
 
 
@@ -48,7 +129,32 @@ Reference:
 
 
 
-BRB Break time
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
